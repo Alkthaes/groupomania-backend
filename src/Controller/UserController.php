@@ -8,6 +8,7 @@ use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Routing\Annotation\Route;
 
 class UserController extends AbstractController
 {
@@ -26,7 +27,7 @@ class UserController extends AbstractController
         $user->setEmail('jeanmichel.test@test.com');
         $user->setPicture('exempleurl.jpg');
         $user->setPassword('exemplepassword');
-        $user->setCreationDate(new date());
+        $user->setCreationDate(new \DateTime());
 
         // tell Doctrine you want to (eventually) save the User (no queries yet)
         $entityManager->persist($user);
@@ -34,7 +35,6 @@ class UserController extends AbstractController
         // actually executes the queries (i.e. the INSERT query)
         $entityManager->flush();
 
-        return new Response('Saved new user with id '.$user->getId());
+        return new Response('Saved new user with id ' . $user->getId());
     }
 }
-
