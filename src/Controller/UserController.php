@@ -5,36 +5,74 @@ namespace App\Controller;
 
 // ...
 use App\Entity\User;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 
 class UserController extends AbstractController
 {
     /**
-     * @Route("/user", name="create_user")
+     * @Route("/user", name="create_user", methods={"POST"})
      */
-    public function createUser(): Response
+    public function createUser(Request $request, SerializerInterface $serializer, EntityManagerInterface $em): Response
     {
-        // you can fetch the EntityManager via $this->getDoctrine()
-        // or you can add an argument to the action: createUser(EntityManagerInterface $entityManager)
-        $entityManager = $this->getDoctrine()->getManager();
+        $receivedJson = $request->getContent();
 
-        $user = new User();
-        $user->setLastname('Test');
-        $user->setFirstname('Jean-Michel');
-        $user->setEmail('jeanmichel.test@test.com');
-        $user->setPicture('exempleurl.jpg');
-        $user->setPassword('exemplepassword');
+        $user = $serializer->deserialize($receivedJson, User::class, 'json');
+
         $user->setCreationDate(new \DateTime());
 
-        // tell Doctrine you want to (eventually) save the User (no queries yet)
-        $entityManager->persist($user);
+        $em->persist($user);
+        $em->flush();
 
-        // actually executes the queries (i.e. the INSERT query)
-        $entityManager->flush();
+        return $this->json($user, 201, []);
+    }
 
-        return new Response('Saved new user with id ' . $user->getId());
+    /**
+     * @Route("/user", name="get_all_users", methods={"GET"})
+     */
+    public function getAllUsers(UserRepository $userRepository):Response
+    {
+        $users = $userRepository->findAll();
+
+        return $this->json($users, 200, []);
+    }
+
+    /**
+     * @Route("/user/{id}", name="get_user", methods={"GET"})
+     */
+    public function getOneUser(int $id, UserRepository $userRepository): Response {
+        $user = $userRepository->find($id);
+
+        if (!$user) {
+            throw $this->createNotFoundException(
+                'Aucun utilisateur trouvé avec l\'identifiant'.$id
+            );
+        }
+
+        return $this->json($user, 200, []);
+    }
+
+    /**
+     * @Route("/user/delete/{id}", name="delete_user", methods={"DELETE"})
+     */
+    public function deleteUser(int $id, UserRepository $userRepository, EntityManagerInterface $em): Response
+    {
+           $user = $userRepository->find($id);
+
+           if (!$user) {
+               throw $this->createNotFoundException(
+                   'Aucun utilisateur trouvé avec l\'identifiant'.$id
+               );
+           }
+
+           $em->remove($user);
+           $em->flush();
+
+           return $this->json($user, 200, []);
     }
 }
