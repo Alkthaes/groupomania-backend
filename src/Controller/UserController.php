@@ -29,7 +29,7 @@ class UserController extends AbstractController
         $em->persist($user);
         $em->flush();
 
-        return $this->json($user, 201, []);
+        return $this->json($user, 201, [], ['groups' => 'user:read']);
     }
 
     /**
@@ -39,11 +39,11 @@ class UserController extends AbstractController
     {
         $users = $userRepository->findAll();
 
-        return $this->json($users, 200, []);
+        return $this->json($users, 200, [], ['groups' => 'user:read']);
     }
 
     /**
-     * @Route("/user/{id}", name="get_user", methods={"GET"})
+     * @Route("/user/{id}", name="get_one_user", methods={"GET"})
      */
     public function getOneUser(int $id, UserRepository $userRepository): Response {
         $user = $userRepository->find($id);
@@ -54,7 +54,7 @@ class UserController extends AbstractController
             );
         }
 
-        return $this->json($user, 200, []);
+        return $this->json($user, 200, [], ['groups' => 'user:read']);
     }
 
     /**
@@ -73,6 +73,6 @@ class UserController extends AbstractController
            $em->remove($user);
            $em->flush();
 
-           return $this->json($user, 200, []);
+           return $this->json(['message' => 'Utilisateur supprimé'], 200, []);
     }
 }
