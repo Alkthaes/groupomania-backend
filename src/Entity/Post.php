@@ -17,25 +17,25 @@ class Post
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups("post:read)
+     * @Groups("post:read")
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups("post:read)
+     * @Groups("post:read")
      */
     private $titre;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups("post:read)
+     * @Groups("post:read")
      */
     private $image;
 
     /**
      * @ORM\Column(type="datetime")
-     * @Groups("post:read)
+     * @Groups("post:read")
      */
     private $creation_date;
 

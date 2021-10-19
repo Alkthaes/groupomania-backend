@@ -20,7 +20,7 @@ class Comment
     private $id;
 
     /**
-     * @ORM\Column(type="text"
+     * @ORM\Column(type="text")
      * @Groups("comment:read")
      */
     private $content;
