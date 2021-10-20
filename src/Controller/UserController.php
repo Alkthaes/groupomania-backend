@@ -108,13 +108,15 @@ class UserController extends AbstractController
 
         $user = $userRepository->find($id);
 
+        $authenticationSuccesHandler = $this->container->get('lexik_jwt_authentication.handler.authentication_success');
+
         if (!$user) {
             throw $this->createNotFoundException(
                 'Aucun utilisateur trouvé avec l\'identifiant' . $id
             );
         }
 
-        return $this->json($user, 200, [], ['groups' => 'user:read']);
+        return $this->json([$authenticationSuccesHandler->handleAuthenticationSuccess($user), $user], 200, [], ['groups' => 'user:read']);
     }
 
     /**
