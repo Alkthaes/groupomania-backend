@@ -99,7 +99,7 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/user/{id}", name="get_one_user", methods={"GET"})
+     * @Route("/user/account/{id}", name="get_one_user", methods={"GET"})
      */
     public function getOneUser(int $id): Response
     {
@@ -108,15 +108,13 @@ class UserController extends AbstractController
 
         $user = $userRepository->find($id);
 
-        $authenticationSuccesHandler = $this->container->get('lexik_jwt_authentication.handler.authentication_success');
-
         if (!$user) {
             throw $this->createNotFoundException(
                 'Aucun utilisateur trouvé avec l\'identifiant' . $id
             );
         }
 
-        return $this->json([$authenticationSuccesHandler->handleAuthenticationSuccess($user), $user], 200, [], ['groups' => 'user:read']);
+        return $this->json($user, 200, [], ['groups' => 'user:read']);
     }
 
     /**
