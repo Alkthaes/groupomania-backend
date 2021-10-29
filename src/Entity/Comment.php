@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\CommentRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -21,27 +23,39 @@ class Comment
 
     /**
      * @ORM\Column(type="text")
-     * @Groups("comment:read")
+     * @Groups({"comment:read", "post:read"})
      */
     private $content;
 
     /**
      * @ORM\Column(type="datetime")
-     * @Groups("comment:read")
+     * @Groups({"comment:read", "post:read"})
      */
     private $creation_date;
 
     /**
      * @ORM\ManyToOne(targetEntity=Post::class, inversedBy="comments")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups("comment:read")
      */
     private $post;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="comments")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups("comment:read")
      */
     private $user;
+
+    /**
+     * @ORM\OneToMany(targetEntity=VoteComment::class, mappedBy="comment", orphanRemoval=true)
+     */
+    private $voteComments;
+
+    public function __construct()
+    {
+        $this->voteComments = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -92,6 +106,36 @@ class Comment
     public function setUser(?User $user): self
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|VoteComment[]
+     */
+    public function getVoteComments(): Collection
+    {
+        return $this->voteComments;
+    }
+
+    public function addVoteComment(VoteComment $voteComment): self
+    {
+        if (!$this->voteComments->contains($voteComment)) {
+            $this->voteComments[] = $voteComment;
+            $voteComment->setComment($this);
+        }
+
+        return $this;
+    }
+
+    public function removeVoteComment(VoteComment $voteComment): self
+    {
+        if ($this->voteComments->removeElement($voteComment)) {
+            // set the owning side to null (unless already changed)
+            if ($voteComment->getComment() === $this) {
+                $voteComment->setComment(null);
+            }
+        }
 
         return $this;
     }

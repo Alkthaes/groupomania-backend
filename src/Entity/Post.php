@@ -42,17 +42,26 @@ class Post
     /**
      * @ORM\ManyToOne(targetEntity=User::class, inversedBy="posts")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups("post:read")
      */
     private $user;
 
     /**
      * @ORM\OneToMany(targetEntity=Comment::class, mappedBy="post", orphanRemoval=true)
+     * @Groups("post:read")
      */
     private $comments;
+
+    /**
+     * @ORM\OneToMany(targetEntity=VotePost::class, mappedBy="post", orphanRemoval=true)
+     * @Groups("post:read")
+     */
+    private $votePosts;
 
     public function __construct()
     {
         $this->comments = new ArrayCollection();
+        $this->votePosts = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -132,6 +141,36 @@ class Post
             // set the owning side to null (unless already changed)
             if ($comment->getPost() === $this) {
                 $comment->setPost(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|VotePost[]
+     */
+    public function getVotePosts(): Collection
+    {
+        return $this->votePosts;
+    }
+
+    public function addVotePost(VotePost $votePost): self
+    {
+        if (!$this->votePosts->contains($votePost)) {
+            $this->votePosts[] = $votePost;
+            $votePost->setPost($this);
+        }
+
+        return $this;
+    }
+
+    public function removeVotePost(VotePost $votePost): self
+    {
+        if ($this->votePosts->removeElement($votePost)) {
+            // set the owning side to null (unless already changed)
+            if ($votePost->getPost() === $this) {
+                $votePost->setPost(null);
             }
         }
 

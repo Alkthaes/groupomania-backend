@@ -3,6 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Post;
+use App\Repository\UserRepository;
+use App\Utils\Base64FileExtractor;
+use App\Utils\UploadedBase64File;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,17 +17,22 @@ class PostController extends AbstractController
     /**
      * @Route("/post/create", name="create_post", methods={"POST"})
      */
-    public function createPost(Request $request): Response
+    public function createPost(Request $request, Base64FileExtractor $base64FileExtractor, UserRepository $userRepository): Response
     {
         $em = $this->getDoctrine()->getManager();
 
-        $imgData = $request->files->get('image');
-        $titleData = $request->files->get('title');
-        $userId = $request->files->get('user_id');
+        $titleData = $request->request->get('title');
 
-        $imgName = 'post_image'.'.'.$imgData->guessExtension();
+        $userId = $request->request->get('user_id'); //on récupère l'utilisateur pour la relation post-user
+        $user = $userRepository->find($userId);
 
-        $imgData->move(
+        $base64String = $request->request->get('image');
+        $base64Image = $base64FileExtractor->extractBase64String($base64String);
+        $imageFile = new UploadedBase64File($base64Image, 'image');
+
+        $imgName = 'post_image'.'-'.uniqid().'.'.$imageFile->guessExtension();
+
+        $imageFile->move(
             $this->getParameter('post_directory'),
             $imgName
         );
@@ -32,8 +40,8 @@ class PostController extends AbstractController
         $post = new Post();
 
         $post->setTitre($titleData);
-        $post->setImage(`../../public/Images/PostImages/$imgName`);
-        $post->setUser($userId);
+        $post->setImage($this->getParameter('post_directory').`/$imgName`);
+        $post->setUser($user);
         $post->setCreationDate(new \DateTime());
 
         $em->persist($post);
@@ -48,7 +56,7 @@ class PostController extends AbstractController
     {
         $postRepository = $this->getDoctrine()->getRepository(Post::class);
 
-        $posts = $postRepository->findAll();
+        $posts = $postRepository->findBy([],['creation_date' => 'DESC']);
 
         return $this->json($posts, 200, [], ['groups' => 'post:read']);
     }

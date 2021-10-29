@@ -20,7 +20,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups("user:read")
+     * @Groups({"user:read", "post:read", "comment:read"})
      */
     private $id;
 
@@ -32,7 +32,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups("user:read")
+     * @Groups({"user:read", "post:read", "comment:read"})
      */
     private $firstname;
 
@@ -44,7 +44,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups("user:read")
+     * @Groups({"user:read", "post:read", "comment:read"})
      */
     private $picture;
 
@@ -82,10 +82,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     private $comments;
 
+    /**
+     * @ORM\OneToMany(targetEntity=VotePost::class, mappedBy="user", orphanRemoval=true)
+     */
+    private $votePosts;
+
+    /**
+     * @ORM\OneToMany(targetEntity=VoteComment::class, mappedBy="user", orphanRemoval=true)
+     */
+    private $voteComments;
+
     public function __construct()
     {
         $this->posts = new ArrayCollection();
         $this->comments = new ArrayCollection();
+        $this->votePosts = new ArrayCollection();
+        $this->voteComments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -272,5 +284,65 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __call($name, $arguments)
     {
         // TODO: Implement @method string getUserIdentifier()
+    }
+
+    /**
+     * @return Collection|VotePost[]
+     */
+    public function getVotePosts(): Collection
+    {
+        return $this->votePosts;
+    }
+
+    public function addVotePost(VotePost $votePost): self
+    {
+        if (!$this->votePosts->contains($votePost)) {
+            $this->votePosts[] = $votePost;
+            $votePost->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeVotePost(VotePost $votePost): self
+    {
+        if ($this->votePosts->removeElement($votePost)) {
+            // set the owning side to null (unless already changed)
+            if ($votePost->getUser() === $this) {
+                $votePost->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|VoteComment[]
+     */
+    public function getVoteComments(): Collection
+    {
+        return $this->voteComments;
+    }
+
+    public function addVoteComment(VoteComment $voteComment): self
+    {
+        if (!$this->voteComments->contains($voteComment)) {
+            $this->voteComments[] = $voteComment;
+            $voteComment->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeVoteComment(VoteComment $voteComment): self
+    {
+        if ($this->voteComments->removeElement($voteComment)) {
+            // set the owning side to null (unless already changed)
+            if ($voteComment->getUser() === $this) {
+                $voteComment->setUser(null);
+            }
+        }
+
+        return $this;
     }
 }
