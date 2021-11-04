@@ -143,7 +143,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getPicture(): ?string
     {
-        return $this->picture;
+        //conversion de l'image en base64 avant de l'envoyer au front
+        $picturePath = $this->picture;
+        $picExtension = explode('.', $picturePath);
+        $picture = file_get_contents($picturePath);
+        $data = base64_encode($picture);
+
+        return 'data:image/' . $picExtension[1] . ';base64,' . $data;
     }
 
     public function setPicture(string $picture): self

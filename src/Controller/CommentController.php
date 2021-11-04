@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Comment;
+use App\Repository\PostRepository;
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,17 +14,27 @@ use Symfony\Component\Serializer\SerializerInterface;
 class CommentController extends AbstractController
 {
     /**
-     * @Route("/comment", name="create_comment", methods={"POST"})
+     * @Route("/comment/create", name="create_comment", methods={"POST"})
      */
-    public function createComment(Request $request, SerializerInterface $serializer): Response
+    public function createComment(Request $request, SerializerInterface $serializer, UserRepository $userRepository, PostRepository $postRepository): Response
     {
         $em = $this->getDoctrine()->getManager();
 
         $receivedJson = $request->getContent();
 
+        //récupération des informations User et Post pour les relations entre les tables
+
+        $userId = json_decode($receivedJson)->user_id;
+        $user = $userRepository->find($userId);
+
+        $postId = json_decode($receivedJson)->post_id;
+        $post = $postRepository->find($postId);
+
         $comment = $serializer->deserialize($receivedJson, Comment::class, 'json');
 
         $comment->setCreationDate(new \DateTime());
+        $comment->setUser($user);
+        $comment->setPost($post);
 
         $em->persist($comment);
         $em->flush();
@@ -37,7 +49,7 @@ class CommentController extends AbstractController
     {
         $commentRepository = $this->getDoctrine()->getRepository(Comment::class);
 
-        return $this->json($commentRepository->findAll(), 200, [], ['groups' => 'comment:read']);
+        return $this->json($commentRepository->findBy([],['creation_date' => 'DESC']), 200, [], ['groups' => 'comment:read']);
     }
 
     /**

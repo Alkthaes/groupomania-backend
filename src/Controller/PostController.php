@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Post;
+use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Utils\Base64FileExtractor;
 use App\Utils\UploadedBase64File;
@@ -40,7 +41,7 @@ class PostController extends AbstractController
         $post = new Post();
 
         $post->setTitre($titleData);
-        $post->setImage($this->getParameter('post_directory').`/$imgName`);
+        $post->setImage($this->getParameter('post_directory').'/'.$imgName);
         $post->setUser($user);
         $post->setCreationDate(new \DateTime());
 
@@ -57,6 +58,7 @@ class PostController extends AbstractController
         $postRepository = $this->getDoctrine()->getRepository(Post::class);
 
         $posts = $postRepository->findBy([],['creation_date' => 'DESC']);
+
 
         return $this->json($posts, 200, [], ['groups' => 'post:read']);
     }

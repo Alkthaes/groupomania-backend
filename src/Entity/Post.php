@@ -17,25 +17,25 @@ class Post
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups("post:read")
+     * @Groups({"post:read", "comment:read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups("post:read")
+     * @Groups({"post:read", "comment:read"})
      */
     private $titre;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="text")
      * @Groups("post:read")
      */
     private $image;
 
     /**
      * @ORM\Column(type="datetime")
-     * @Groups("post:read")
+     * @Groups({"post:read", "comment:read"})
      */
     private $creation_date;
 
@@ -57,6 +57,7 @@ class Post
      * @Groups("post:read")
      */
     private $votePosts;
+
 
     public function __construct()
     {
@@ -83,7 +84,13 @@ class Post
 
     public function getImage(): ?string
     {
-        return $this->image;
+        //conversion de l'image en base64 avant de l'envoyer vers le front
+        $imgPath = $this->image;
+        $imgExtension = explode('.', $imgPath);
+        $img = file_get_contents($imgPath);
+        $data = base64_encode($img);
+
+        return 'data:image/' . $imgExtension[1] . ';base64,' . $data;
     }
 
     public function setImage(string $image): self
