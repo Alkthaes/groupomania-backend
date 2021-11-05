@@ -64,6 +64,18 @@ class PostController extends AbstractController
     }
 
     /**
+     * @Route("/post/user/{id}", name="get_all_user_posts", methods={"GET"})
+     */
+    public function getAllUserPosts(int $id): Response
+    {
+        $postRepository = $this->getDoctrine()->getRepository(Post::class);
+
+        $posts = $postRepository->findBy(['user' => $id],['creation_date' => 'DESC']);
+
+        return $this->json($posts, 200, [], ['groups' => 'post:read']);
+    }
+
+    /**
      * @Route("/post/{id}", name="get_one_post", methods={"GET"})
      */
     public function getOnePost(Int $id): Response
