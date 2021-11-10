@@ -12,7 +12,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactory;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -148,6 +147,63 @@ class UserController extends AbstractController
         $em->flush();
 
         return $this->json($user, 200, [], ['groups' => 'user:read']);
+    }
+
+    /**
+     * @Route("/user/update/infos", name="update_infos", methods={"PUT"})
+     */
+    public function updateInfos(Request $request, SerializerInterface $serializer, UserPasswordHasherInterface $passwordHasher): Response
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        $userRepository = $this->getDoctrine()->getRepository(User::class);
+
+        $lastname = $request->toArray()['lastname'];
+        $firstname = $request->toArray()['firstname'];
+        $email = $request->toArray()['email'];
+        $password = $request->toArray()['password'];
+        $secteur = $request->toArray()['secteur'];
+        $fonction = $request->toArray()['fonction'];
+
+
+        $user = $userRepository->find($request->toArray()['user_id']);
+
+
+        //l'utilisateur peut ne pas changer la totalité de ses informations, on update donc uniquement les champs renseignés
+
+        if ($lastname != '') {
+            $user->setLastname($lastname);
+        }
+
+        if ($firstname != '') {
+            $user->setFirstname($firstname);
+        }
+
+        if ($email != '') {
+            $user->setEmail($email);
+        }
+
+        if ($password != '') {
+            $hashedPassword = $passwordHasher->hashPassword(
+                $user,
+                $password
+            );
+
+            $user->setPassword($hashedPassword);
+        }
+
+        if ($secteur != '') {
+            $user->setSecteur($secteur);
+        }
+
+        if ($fonction != '') {
+            $user->setFonction($fonction);
+        }
+
+        $em->persist($user);
+        $em->flush();
+
+        return $this->json($user,200, [], ['groups' => 'user:read']);
     }
 
     /**
