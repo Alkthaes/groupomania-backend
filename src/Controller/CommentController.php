@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Comment;
+use App\Entity\Post;
 use App\Repository\PostRepository;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -43,13 +44,14 @@ class CommentController extends AbstractController
     }
 
     /**
-     * @Route("/comment", name="get_all_comments", methods={"GET"})
+     * @Route("/comment/post/{id}", name="get_all_comments", methods={"GET"})
      */
-    public function getAllComments(): Response
+    public function getAllComments(int $id, Request $request): Response
     {
         $commentRepository = $this->getDoctrine()->getRepository(Comment::class);
+        $post = $this->getDoctrine()->getRepository(Post::class)->find($id);
 
-        return $this->json($commentRepository->findBy([],['creation_date' => 'DESC']), 200, [], ['groups' => 'comment:read']);
+        return $this->json($commentRepository->findBy(['post' => $post],['creation_date' => 'DESC']), 200, [], ['groups' => 'comment:read']);
     }
 
     /**

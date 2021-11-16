@@ -55,9 +55,8 @@ class PostController extends AbstractController
      */
     public function getAllPosts(): Response
     {
-        $postRepository = $this->getDoctrine()->getRepository(Post::class);
 
-        $posts = $postRepository->findBy([],['creation_date' => 'DESC']);
+        $posts = $this->getDoctrine()->getRepository(Post::class)->findBy([],['creation_date' => 'DESC']);
 
 
         return $this->json($posts, 200, [], ['groups' => 'post:read']);

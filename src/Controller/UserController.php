@@ -156,8 +156,7 @@ class UserController extends AbstractController
     {
         $em = $this->getDoctrine()->getManager();
 
-        $userRepository = $this->getDoctrine()->getRepository(User::class);
-
+        $receivedJson = $request->getContent();
         $lastname = $request->toArray()['lastname'];
         $firstname = $request->toArray()['firstname'];
         $email = $request->toArray()['email'];
@@ -166,7 +165,7 @@ class UserController extends AbstractController
         $fonction = $request->toArray()['fonction'];
 
 
-        $user = $userRepository->find($request->toArray()['user_id']);
+        $user = $serializer->deserialize($receivedJson, User::class, 'json');
 
 
         //l'utilisateur peut ne pas changer la totalité de ses informations, on update donc uniquement les champs renseignés

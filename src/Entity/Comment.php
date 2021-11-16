@@ -36,7 +36,7 @@ class Comment
     /**
      * @ORM\ManyToOne(targetEntity=Post::class, inversedBy="comments")
      * @ORM\JoinColumn(nullable=false)
-     * @Groups("comment:read")
+     * @Groups({"comment:read"})
      */
     private $post;
 
@@ -46,16 +46,6 @@ class Comment
      * @Groups("comment:read")
      */
     private $user;
-
-    /**
-     * @ORM\OneToMany(targetEntity=VoteComment::class, mappedBy="comment", orphanRemoval=true)
-     */
-    private $voteComments;
-
-    public function __construct()
-    {
-        $this->voteComments = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
@@ -106,36 +96,6 @@ class Comment
     public function setUser(?User $user): self
     {
         $this->user = $user;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|VoteComment[]
-     */
-    public function getVoteComments(): Collection
-    {
-        return $this->voteComments;
-    }
-
-    public function addVoteComment(VoteComment $voteComment): self
-    {
-        if (!$this->voteComments->contains($voteComment)) {
-            $this->voteComments[] = $voteComment;
-            $voteComment->setComment($this);
-        }
-
-        return $this;
-    }
-
-    public function removeVoteComment(VoteComment $voteComment): self
-    {
-        if ($this->voteComments->removeElement($voteComment)) {
-            // set the owning side to null (unless already changed)
-            if ($voteComment->getComment() === $this) {
-                $voteComment->setComment(null);
-            }
-        }
 
         return $this;
     }
