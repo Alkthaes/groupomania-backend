@@ -79,9 +79,54 @@ class PostController extends AbstractController
      */
     public function getOnePost(Int $id): Response
     {
-        $postRepository = $this->getDoctrine()->getRepository(Post::class);
 
-        $post = $postRepository->find($id);
+        $post = $this->getDoctrine()->getRepository(Post::class)->find($id);
+
+        return $this->json($post, 200, [], ['groups' => 'post:read']);
+    }
+
+    /**
+     * @Route("/post/edit/title/{id}", name="edit_title", methods={"PUT"})
+     */
+    public function editTitle(int $id, Request $request): Response
+    {
+        $em = $this->getDoctrine()->getManager();
+        $post = $this->getDoctrine()->getRepository(Post::class)->find($id);
+
+        $post->setTitre($request->toArray()['titre']);
+
+        $em->persist($post);
+        $em->flush();
+
+        return $this->json($post, 200, [], ['groups' => 'post:read']);
+    }
+
+    /**
+     * @Route("/post/edit/image/{id}", name="edit_image", methods={"PUT"})
+     */
+    public function editImage(int $id, Request $request, Base64FileExtractor $base64FileExtractor): Response
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        $base64String = $request->toArray()['image'];
+        $base64Image = $base64FileExtractor->extractBase64String($base64String);
+        $imageFile = new UploadedBase64File($base64Image, 'image');
+
+        $imgName = 'post_image'.'-'.uniqid().'.'.$imageFile->guessExtension();
+
+        $imageFile->move(
+            $this->getParameter('post_directory'),
+            $imgName
+        );
+
+        $post = $this->getDoctrine()->getRepository(Post::class)->find($id);
+
+
+        $post->setImage($this->getParameter('post_directory').'/'.$imgName);
+
+
+        $em->persist($post);
+        $em->flush();
 
         return $this->json($post, 200, [], ['groups' => 'post:read']);
     }
@@ -106,6 +151,6 @@ class PostController extends AbstractController
         $em->remove($post);
         $em->flush();
 
-        return $this->json(['message' => 'Post supprimé'], 200, []);
+        return $this->json(['message' => 'Post supprimé'], 204, []);
     }
 }

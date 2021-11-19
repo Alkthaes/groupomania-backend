@@ -44,6 +44,8 @@ class UserController extends AbstractController
 
             $user->setCreationDate(new \DateTime());
             $user->setPassword($hashedPassword);
+            $user->setRoles(['ROLE_USER']);
+            $user->setPicture('C:\wamp64\www\groupomania-backend/public/Images/default-avatar.jpg');
 
             $em->persist($user);
             $em->flush();
@@ -212,9 +214,8 @@ class UserController extends AbstractController
     {
         $em = $this->getDoctrine()->getManager();
 
-        $userRepository = $this->getDoctrine()->getRepository(User::class);
 
-        $user = $userRepository->find($id);
+        $user = $this->getDoctrine()->getRepository(User::class)->find($id);
 
         if (!$user) {
             throw $this->createNotFoundException(
@@ -225,6 +226,6 @@ class UserController extends AbstractController
         $em->remove($user);
         $em->flush();
 
-        return $this->json(['message' => 'Utilisateur supprimé'], 200, []);
+        return $this->json(['message' => 'Utilisateur supprimé'], 204, []);
     }
 }

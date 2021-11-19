@@ -6,7 +6,7 @@
 parameters:
     locale: 'fr'
     post_directory: '%kernel.project_dir%/public/Images/PostImages'
-    user_directory: '£kernel.project_dir%/public/Images/UserProfilePic'
+    user_directory: '%kernel.project_dir%/public/Images/UserProfilePic'
 
 services:
     # default configuration for services in *this* file
